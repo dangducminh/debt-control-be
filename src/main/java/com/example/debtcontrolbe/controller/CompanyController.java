@@ -1,17 +1,15 @@
 package com.example.debtcontrolbe.controller;
 
-import com.example.debtcontrolbe.model.Company;
-import com.example.debtcontrolbe.model.dto.CompanyDTO;
+
 import com.example.debtcontrolbe.model.reponse.CompanyResponse;
 import com.example.debtcontrolbe.model.reponse.FullCompanyInformationResponse;
+import com.example.debtcontrolbe.model.request.AddCompanyRequest;
 import com.example.debtcontrolbe.service.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -40,5 +38,11 @@ public class CompanyController {
     public ResponseEntity<FullCompanyInformationResponse> getFullCompanyInfoByCode(
             @RequestParam(name = "companyCode") String companyCode){
         return new ResponseEntity<>(companyService.getFullCompanyInfoByCode(companyCode), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/add-company", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> addCompany(
+            @RequestBody AddCompanyRequest addCompanyRequest){
+        return new ResponseEntity<>(companyService.addCompany(addCompanyRequest), HttpStatus.OK);
     }
 }

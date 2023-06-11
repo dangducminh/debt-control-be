@@ -1,15 +1,20 @@
 package com.example.debtcontrolbe.service;
 
 import com.example.debtcontrolbe.model.Company;
+import com.example.debtcontrolbe.model.Representative;
 import com.example.debtcontrolbe.model.dto.CompanyDTO;
 import com.example.debtcontrolbe.model.reponse.CompanyResponse;
 import com.example.debtcontrolbe.model.reponse.FullCompanyInformationResponse;
+import com.example.debtcontrolbe.model.request.AddCompanyRequest;
 import com.example.debtcontrolbe.repository.CompanyRepository;
+import com.example.debtcontrolbe.repository.RepresentativeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +25,10 @@ public class CompanyService {
     @Autowired
     private CompanyRepository companyRepository;
 
+    @Autowired
+    private RepresentativeRepository representativeRepository;
+
+
     public CompanyResponse getCompany(Integer page) {
         int index = page*10;
         if (companyList.isEmpty()){
@@ -28,7 +37,9 @@ public class CompanyService {
         int start = index-10;
         int end = index;
 
-        if (end> companyList.size()){
+        if(start>companyList.size()){
+            return (CompanyResponse) Collections.emptyList();
+        }else if (end> companyList.size()){
             end = companyList.size();
         }
 
@@ -43,8 +54,10 @@ public class CompanyService {
         int start = index-10;
         int end = index;
 
-        if (end> companyListByCode.size()){
-            end = companyListByCode.size();
+        if(start>companyList.size()){
+            return (CompanyResponse) Collections.emptyList();
+        }else if (end> companyList.size()){
+            end = companyList.size();
         }
 
         return new CompanyResponse(
@@ -53,7 +66,7 @@ public class CompanyService {
     }
 
     public FullCompanyInformationResponse getFullCompanyInfoByCode(String companyCode) {
-        Company company = companyRepository.findAllByCompanyCode(companyCode);
+        Company company = companyRepository.findByCompanyCode(companyCode).get();
         return new FullCompanyInformationResponse(
                 company.getCompanyCode(),
                 company.getNameCompany(),
@@ -62,5 +75,18 @@ public class CompanyService {
                 company.getRepresentative().getGmail(),
                 company.getRepresentative().getNumberPhone()
         );
+    }
+
+
+    public String addCompany(AddCompanyRequest addCompanyRequest) {
+        Optional<Company> companies = companyRepository.findByCompanyCode(addCompanyRequest.getCompanyCode());
+        if (companies.isEmpty()){
+            Representative representative = new Representative(addCompanyRequest.getRepresentativeName(),addCompanyRequest.getGmail(),addCompanyRequest.getNumberPhone());
+            Company company = new Company(addCompanyRequest.getCompanyCode(),addCompanyRequest.getNameCompany(),representative);
+            representativeRepository.save(representative);
+            companyRepository.save(company);
+            return "save company success";
+        }
+        return "company exist";
     }
 }
