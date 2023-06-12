@@ -54,7 +54,11 @@ public class CompanyService {
         int start = index-10;
         int end = index;
 
-        if(start>companyList.size()){
+        if(companyList.size()<10){
+            return new CompanyResponse(
+                    companyListByCode.size(),
+                    companyListByCode.stream().map(i -> new CompanyDTO(i.getCompanyCode(),i.getNameCompany(),i.getRepresentative().getRepresentativeName())).collect(Collectors.toList()));
+        } else if(start>companyList.size()){
             return (CompanyResponse) Collections.emptyList();
         }else if (end> companyList.size()){
             end = companyList.size();

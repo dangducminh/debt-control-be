@@ -21,10 +21,10 @@ public class Representative {
     @Column
     private String representativeName;
 
-    @Column(unique = true)
+    @Column
     private String gmail;
 
-    @Column(unique = true)
+    @Column
     private String numberPhone;
 
 

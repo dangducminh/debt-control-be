@@ -39,29 +39,43 @@ public class DebtService {
             return "company does not exits";
         }
         Company company = companyCheck.get();
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
-        Debt checkHistoryDebt = debtRepository.getLatestDebt(company.getId());
-        if (checkHistoryDebt.getDate().getMonthValue()==now.getMonthValue()){
+        Optional<Debt> checkHistoryDebt1 = debtRepository.getLatestDebt(company.getId());
+        if (checkHistoryDebt1.isPresent()){
+            Debt debtCheck = checkHistoryDebt1.get();
+            if (debtCheck.getDate().getMonthValue()==now.getMonthValue()){
+                Debt debt = new Debt();
+                debt.setId(debtCheck.getId());
+                debt.setDate(now);
+                debt.setCompany(company);
+                debt.setTotalMoney(debtCheck.getTotalMoney()+addDebtRequest.getTotalMoney());
+                debt.setAmountPaid(debtCheck.getAmountPaid()+addDebtRequest.getAmountPaid());
+                debt.setAmountOwed(debtCheck.getAmountOwed()+addDebtRequest.getAmountOwed());
+                debtRepository.save(debt);
+                return "success";
+            }else {
+                Debt debt = new Debt();
+                debt.setDate(now);
+                debt.setCompany(company);
+                debt.setTotalMoney(debtCheck.getTotalMoney()+addDebtRequest.getTotalMoney());
+                debt.setAmountPaid(debtCheck.getAmountPaid()+addDebtRequest.getAmountPaid());
+                debt.setAmountOwed(debtCheck.getAmountOwed()+addDebtRequest.getAmountOwed());
+                debtRepository.save(debt);
+                return "success";
+            }
+        }else {
             Debt debt = new Debt();
-            debt.setId(checkHistoryDebt.getId());
             debt.setDate(now);
             debt.setCompany(company);
-            debt.setTotalMoney(checkHistoryDebt.getTotalMoney()+addDebtRequest.getTotalMoney());
-            debt.setAmountPaid(checkHistoryDebt.getAmountPaid()+addDebtRequest.getAmountPaid());
-            debt.setAmountOwed(checkHistoryDebt.getAmountOwed()+addDebtRequest.getAmountOwed());
+            debt.setTotalMoney(addDebtRequest.getTotalMoney());
+            debt.setAmountPaid(addDebtRequest.getAmountPaid());
+            debt.setAmountOwed(addDebtRequest.getAmountOwed());
             debtRepository.save(debt);
             return "success";
         }
-        Debt debt = new Debt();
-        debt.setId(checkHistoryDebt.getId());
-        debt.setDate(now);
-        debt.setCompany(company);
-        debt.setTotalMoney(addDebtRequest.getTotalMoney());
-        debt.setAmountPaid(addDebtRequest.getAmountPaid());
-        debt.setAmountOwed(addDebtRequest.getAmountOwed());
-        debtRepository.save(debt);
-        return "success";
     }
 
+    public String exportDebt(String companyCode) {
+        return "success";
+    }
 }
