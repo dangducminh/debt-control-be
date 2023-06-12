@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 @Service
 public class CompanyService {
 
-    private List<Company> companyList = new ArrayList<>();
-
     @Autowired
     private CompanyRepository companyRepository;
 
@@ -30,14 +28,16 @@ public class CompanyService {
 
 
     public CompanyResponse getCompany(Integer page) {
+        List<Company> companyList = companyRepository.findAll();
         int index = page*10;
-        if (companyList.isEmpty()){
-            companyList = companyRepository.findAll();
-        }
         int start = index-10;
         int end = index;
 
-        if(start>companyList.size()){
+        if(companyList.size()<10){
+            return new CompanyResponse(
+                    companyList.size(),
+                    companyList.stream().map(i -> new CompanyDTO(i.getCompanyCode(),i.getNameCompany(),i.getRepresentative().getRepresentativeName())).collect(Collectors.toList()));
+        }else if(start>companyList.size()){
             return (CompanyResponse) Collections.emptyList();
         }else if (end> companyList.size()){
             end = companyList.size();
@@ -54,14 +54,14 @@ public class CompanyService {
         int start = index-10;
         int end = index;
 
-        if(companyList.size()<10){
+        if(companyListByCode.size()<10){
             return new CompanyResponse(
                     companyListByCode.size(),
                     companyListByCode.stream().map(i -> new CompanyDTO(i.getCompanyCode(),i.getNameCompany(),i.getRepresentative().getRepresentativeName())).collect(Collectors.toList()));
-        } else if(start>companyList.size()){
+        } else if(start>companyListByCode.size()){
             return (CompanyResponse) Collections.emptyList();
-        }else if (end> companyList.size()){
-            end = companyList.size();
+        }else if (end> companyListByCode.size()){
+            end = companyListByCode.size();
         }
 
         return new CompanyResponse(
