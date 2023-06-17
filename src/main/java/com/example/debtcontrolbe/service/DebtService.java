@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,10 +25,12 @@ public class DebtService {
     private CompanyRepository companyRepository;
 
     public List<HistoryDebtResponse> getDebtHistory(String companyCode){
+        DateTimeFormatter formatterMonth = DateTimeFormatter.ofPattern("MM/yyyy");
+        DateTimeFormatter formatterDate_Time = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         Company company = companyRepository.findByCompanyCode(companyCode).get();
         List<HistoryDebtResponse> debts = debtRepository.findTheLatest12RecordByCompanyCodeOrderByDate(company.getId())
                 .stream()
-                .map(i -> new HistoryDebtResponse(i.getId(),i.getCompany().getNameCompany(),i.getTotalMoney(),i.getAmountPaid(),i.getAmountOwed(),i.getDate()))
+                .map(i -> new HistoryDebtResponse(i.getTotalMoney(),i.getAmountPaid(),i.getAmountOwed(),i.getDate().format(formatterMonth),i.getDate().format(formatterDate_Time)))
                 .collect(Collectors.toList());
         return debts;
     }

@@ -13,10 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HistoryDebtResponse {
-    private Long id;
-    private String companyName;
     private Double totalMoney;
     private Double amountPaid;
     private Double amountOwed;
-    private LocalDateTime date;
+    private String month;
+    private String lastUpdate;
 }
