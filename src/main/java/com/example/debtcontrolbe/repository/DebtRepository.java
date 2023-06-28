@@ -1,9 +1,12 @@
 package com.example.debtcontrolbe.repository;
 
+import com.example.debtcontrolbe.model.Company;
 import com.example.debtcontrolbe.model.Debt;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +30,19 @@ public interface DebtRepository extends JpaRepository<Debt,Long> {
                     "limit 1",
             nativeQuery = true)
     Optional<Debt> getLatestDebt(Long companyId);
+
+    @Query(
+            value = "SELECT * \n" +
+                    "FROM debt d  \n" +
+                    "WHERE d.companyCode = :companyCode \n" +
+                    "order by date DESC\n" +
+                    "limit 1",
+            nativeQuery = true)
+    Optional<Debt> findFirstByCompanyId(String companyCode);
+
+
+    @Modifying
+    @Transactional
+    @Query(value ="DELETE FROM debt WHERE company_id = :companyId",nativeQuery = true)
+    void deleteByCompanyId(Long companyId);
 }

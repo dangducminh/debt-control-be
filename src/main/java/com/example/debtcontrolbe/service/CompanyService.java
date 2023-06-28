@@ -7,6 +7,7 @@ import com.example.debtcontrolbe.model.reponse.CompanyResponse;
 import com.example.debtcontrolbe.model.reponse.FullCompanyInformationResponse;
 import com.example.debtcontrolbe.model.request.AddCompanyRequest;
 import com.example.debtcontrolbe.repository.CompanyRepository;
+import com.example.debtcontrolbe.repository.DebtRepository;
 import com.example.debtcontrolbe.repository.RepresentativeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ public class CompanyService {
 
     @Autowired
     private RepresentativeRepository representativeRepository;
+
+    @Autowired
+    private DebtRepository debtRepository;
 
 
     public CompanyResponse getCompany(Integer page) {
@@ -92,5 +96,18 @@ public class CompanyService {
             return "save company success";
         }
         return "company exist";
+    }
+
+    public String deleteCompany(String companyCode) {
+
+        Optional<Company> companies = companyRepository.findByCompanyCode(companyCode);
+        if (companies.isPresent()){
+            Company company = companies.get();
+            debtRepository.deleteByCompanyId(company.getId());
+            companyRepository.deleteByCompanyCode(companyCode);
+            representativeRepository.deleteById(company.getRepresentative().getId());
+            return "Success";
+        }
+        return "company not exist";
     }
 }

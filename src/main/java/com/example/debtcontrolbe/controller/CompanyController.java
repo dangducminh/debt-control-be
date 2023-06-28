@@ -46,4 +46,11 @@ public class CompanyController {
             @RequestBody AddCompanyRequest addCompanyRequest){
         return new ResponseEntity<>(companyService.addCompany(addCompanyRequest), HttpStatus.OK);
     }
+
+    //http://localhost:8080/api/delete-company?companyCode=ABC
+    @DeleteMapping(value = "/delete-company", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteCompany(
+            @RequestParam(name = "companyCode") String companyCode){
+        return new ResponseEntity<>(companyService.deleteCompany(companyCode), HttpStatus.OK);
+    }
 }

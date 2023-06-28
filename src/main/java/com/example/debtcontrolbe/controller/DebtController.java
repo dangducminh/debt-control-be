@@ -34,6 +34,6 @@ public class DebtController {
     @PostMapping(value = "/export-debt", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> exportDebt(
             @RequestParam(name = "companyCode") String companyCode){
-        return new ResponseEntity<String>(debtService.exportDebt(companyCode), HttpStatus.OK);
+        return new ResponseEntity<>(debtService.exportDebt(companyCode), HttpStatus.OK);
     }
 }
