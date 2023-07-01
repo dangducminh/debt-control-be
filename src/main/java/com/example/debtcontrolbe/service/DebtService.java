@@ -13,13 +13,9 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.BodyPart;
+
+import javax.mail.Authenticator;
 import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -31,6 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -110,6 +107,7 @@ public class DebtService {
 
     public String exportDebt(String companyCode) {
         Optional<Company> optionalCompany = companyRepository.findByCompanyCode(companyCode);
+        DecimalFormat decimalFormat = new DecimalFormat("#");
         if (optionalCompany.isPresent()){
             Company company = optionalCompany.get();
             Optional<Debt> optionalDebt = debtRepository.getLatestDebt(company.getId());
@@ -153,13 +151,13 @@ public class DebtService {
                     Paragraph paragraph5 = new Paragraph("Em xin phép gửi thông tin chi tiết tổng hợp về và phí dịch vụ kế toán Tháng "+debt.getDate().format(formatterMonth)+" như sau:",fontBody);
                     paragraph5.setAlignment(Element.ALIGN_LEFT);
 
-                    Paragraph paragraph6 = new Paragraph("Tổng nợ :               "+debt.getTotalMoney().toString()+" VND",fontBody);
+                    Paragraph paragraph6 = new Paragraph("Tổng nợ :               "+decimalFormat.format(debt.getTotalMoney())+" VND",fontBody);
                     paragraph6.setAlignment(Element.ALIGN_LEFT);
 
-                    Paragraph paragraph7 = new Paragraph("Số tiền đã trả :       "+debt.getAmountPaid().toString() +" VND",fontBody);
+                    Paragraph paragraph7 = new Paragraph("Số tiền đã trả :       "+decimalFormat.format(debt.getAmountPaid())+" VND",fontBody);
                     paragraph7.setAlignment(Element.ALIGN_LEFT);
 
-                    Paragraph paragraph8 = new Paragraph("Số tiền còn nợ :     "+debt.getAmountPaid().toString() +" VND",fontBody);
+                    Paragraph paragraph8 = new Paragraph("Số tiền còn nợ :     "+decimalFormat.format(debt.getAmountOwed()) +" VND",fontBody);
                     paragraph8.setAlignment(Element.ALIGN_LEFT);
 
                     Paragraph paragraph9 = new Paragraph("Ghi chú : phí dịch vụ tháng "+debt.getDate().format(formatterMonth),fontBody);
@@ -190,13 +188,6 @@ public class DebtService {
                     Paragraph paragraph16 = new Paragraph("Cảm ơn quý công ty" ,fontBody);
                     paragraph16.setAlignment(Element.ALIGN_LEFT);
 
-//                    //Thêm nội dung cho cả 2 đoạn văn bản trên
-//                    Phrase phrase = new Phrase("This is a large sentence.");
-//                    for(int i = 0; i < 10; i++)
-//                    {
-//                        paragraph1.add(phrase);
-//                        paragraph2.add(phrase);
-//                    }
                     //Thêm 2 đoạn văn bản vào document
                     document.add(paragraphWhiteSpace);
                     document.add(paragraph1);
@@ -220,11 +211,10 @@ public class DebtService {
                     document.add(paragraph14);
                     document.add(paragraph15);
                     document.add(paragraph16);
-
-                    sendEmail(company.getRepresentative().getGmail(),path,company.getNameCompany(),company.getRepresentative().getRepresentativeName());
-
                     // đóng file
                     document.close();
+
+                    sendEmail(company.getRepresentative().getGmail(),path,company.getNameCompany(),company.getRepresentative().getRepresentativeName());
 
                 } catch (DocumentException e) {
                     e.printStackTrace();
@@ -241,50 +231,52 @@ public class DebtService {
     }
 
     public void sendEmail(String toEmail ,String pathToFile, String companyName , String nameRepresentative){
-        final String user="loimuonnoi150601@gmail.com";//change accordingly
-        final String password="xxxxx";//change accordingly
-        //1) get the session object
-        Properties properties = System.getProperties();
-        properties.setProperty("mail.smtp.host", "mail.javatpoint.com");
-        properties.put("mail.smtp.auth", "true");
 
-        Session session = Session.getDefaultInstance(properties,
-                new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(user,password);
-                    }
-                });
-        //2) compose message
-        try{
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(user));
-            message.addRecipient(Message.RecipientType.TO,new InternetAddress(toEmail));
-            message.setSubject("Message Aleart");
+        //smtp properties
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", true);
+        properties.put("mail.smtp.starttls.enable", true);
+        properties.put("mail.smtp.port", "587");
+        properties.put("mail.smtp.host", "smtp.gmail.com");
 
-            //3) create MimeBodyPart object and set your message text
-            BodyPart messageBodyPart1 = new MimeBodyPart();
-            messageBodyPart1.setText("This is message body");
-
-            //4) create new MimeBodyPart object and set DataHandler object to this object
-            MimeBodyPart messageBodyPart2 = new MimeBodyPart();
-
-            DataSource source = new FileDataSource(pathToFile);
-            messageBodyPart2.setDataHandler(new DataHandler(source));
-            messageBodyPart2.setFileName(pathToFile);
+        String username = "loimuonnoi150601";
+        String password = "zvnkbuktfcmrgnya";
+        String from = "loimuonnoi150601@gmail.com";
+        File file = new File(pathToFile);
 
 
-            //5) create Multipart object and add MimeBodyPart objects to this object
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messageBodyPart1);
-            multipart.addBodyPart(messageBodyPart2);
+        //session
+        Session session = Session.getInstance(properties, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
 
-            //6) set the multiplart object to the message object
-            message.setContent(multipart );
+        try {
 
-            //7) send message
+            Message message = new MimeMessage(session);
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
+            message.setFrom(new InternetAddress(from));
+            message.setSubject("ABC");
+
+            MimeBodyPart part1 = new MimeBodyPart();
+            part1.setText("XYZ");
+
+            MimeBodyPart part2 = new MimeBodyPart();
+            part2.attachFile(file);
+
+            MimeMultipart mimeMultipart = new MimeMultipart();
+            mimeMultipart.addBodyPart(part1);
+            mimeMultipart.addBodyPart(part2);
+
+            message.setContent(mimeMultipart);
+
             Transport.send(message);
 
-            System.out.println("message sent....");
-        }catch (MessagingException ex) {ex.printStackTrace();}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
