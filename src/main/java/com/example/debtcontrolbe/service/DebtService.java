@@ -214,7 +214,7 @@ public class DebtService {
                     // đóng file
                     document.close();
 
-                    sendEmail(company.getRepresentative().getGmail(),path,company.getNameCompany(),company.getRepresentative().getRepresentativeName());
+                    sendEmail(company.getRepresentative().getGmail(),path,company.getNameCompany().toUpperCase(),company.getRepresentative().getRepresentativeName(),debt.getDate().format(formatterMonth));
 
                 } catch (DocumentException e) {
                     e.printStackTrace();
@@ -230,7 +230,7 @@ public class DebtService {
         return "success";
     }
 
-    public void sendEmail(String toEmail ,String pathToFile, String companyName , String nameRepresentative){
+    public void sendEmail(String toEmail ,String pathToFile, String companyName , String nameRepresentative, String date){
 
         //smtp properties
         Properties properties = new Properties();
@@ -258,10 +258,10 @@ public class DebtService {
             Message message = new MimeMessage(session);
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
             message.setFrom(new InternetAddress(from));
-            message.setSubject("ABC");
+            message.setSubject("Hoá đơn công nợ tháng: "+date);
 
             MimeBodyPart part1 = new MimeBodyPart();
-            part1.setText("XYZ");
+            part1.setText("Kính gửi anh/chị: "+nameRepresentative+", bên em gửi hóa đơn công nợ tháng: "+date+" của công ty: "+companyName);
 
             MimeBodyPart part2 = new MimeBodyPart();
             part2.attachFile(file);
